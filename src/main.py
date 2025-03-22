@@ -22,14 +22,20 @@
 from fastapi import FastAPI
 from src.autocomplete import Autocomplete, search_names
 
-app = FastAPI()
+app = FastAPI(
+    title="Name Autocomplete API",
+    description="An API for name autocompletion using Redis",
+    version="1.0.0"
+)
 
 @app.get("/")
 async def root():
+    """Welcome endpoint for the API"""
     return {"message": "Welcome to the Autocomplete API"}
 
 @app.get("/autocomplete/")
 async def get_suggestions(prefix: str = "", limit: int = 5):
+    """Get name suggestions using query parameters"""
     try:
         suggestions = search_names(prefix.lower(), limit)
         return {"suggestions": list(suggestions)}
@@ -38,6 +44,7 @@ async def get_suggestions(prefix: str = "", limit: int = 5):
 
 @app.get("/autocomplete/{prefix}")
 async def get_suggestions_path(prefix: str, limit: int = 5):
+    """Get name suggestions using path parameters"""
     try:
         suggestions = search_names(prefix.lower(), limit)
         return {"suggestions": list(suggestions)}

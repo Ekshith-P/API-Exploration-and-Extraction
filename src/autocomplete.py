@@ -1,23 +1,25 @@
 import os
-from pathlib import Path
 import redis
+from pathlib import Path
 
-REDIS_HOST = os.getenv('REDIS_HOST', 'redis-16337.crce179.ap-south-1-1.ec2.redns.redis-cloud.com')
-REDIS_PORT = int(os.getenv('REDIS_PORT', 16337))
-REDIS_PASSWORD = os.getenv('Bittu39', None)
-
-r = redis.Redis(
-    host=REDIS_HOST,
-    port=REDIS_PORT,
-    password=REDIS_PASSWORD,
-    decode_responses=True
-)
+# Redis Cloud connection details
+REDIS_HOST = "redis-16337.crce179.ap-south-1-1.ec2.redns.redis-cloud.com"
+REDIS_PORT = 16337
+REDIS_PASSWORD = os.getenv('REDIS_PASSWORD')  # Get this from environment variables
 
 try:
+    r = redis.Redis(
+        host=REDIS_HOST,
+        port=REDIS_PORT,
+        password=REDIS_PASSWORD,
+        decode_responses=True,
+        ssl=True  # Required for Redis Cloud
+    )
     r.ping()
     print("Successfully connected to Redis!")
-except redis.ConnectionError:
-    print("Redis connection failed")
+except Exception as e:
+    print(f"Redis connection failed: {str(e)}")
+    r = None
 
 class TrieNode:
     def __init__(self):
@@ -48,10 +50,6 @@ class Autocomplete:
             node = node.children[char]
         return sorted(set(node.names))[:top_n]
 
-# Initialize Redis connection
-import redis
-r = redis.Redis(host='localhost', port=6379, decode_responses=True)
-
 def load_names_into_redis(file_path):
     project_root = Path(__file__).parent.parent
     full_path = project_root / "data" / file_path
@@ -62,13 +60,11 @@ def load_names_into_redis(file_path):
             r.sadd("names", name)
 
 def search_names(prefix, limit=10):
-    all_names = r.smembers("names")
-    matches = [name for name in all_names if name.startswith(prefix)][:limit]
-    return matches
-
-# Remove or comment out the test code
-# with open(PROJECT_ROOT / "data" / "results.txt", "r") as file:
-#     extracted_names = [line.strip().lower() for line in file if line.strip()]
-# trie = Trie()  # This was causing the error
-# for name in extracted_names:
-#     trie.insert(name.lower())
+    if r is None:
+        return {"error": "Redis connection not available"}
+    try:
+        all_names = r.smembers("names")
+        matches = [name for name in all_names if name.startswith(prefix.lower())][:limit]
+        return matches
+    except Exception as e:
+        return {"error": str(e)}
