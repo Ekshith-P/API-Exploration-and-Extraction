@@ -1,5 +1,24 @@
+import os
 from pathlib import Path
+import redis
 PROJECT_ROOT = Path(__file__).parent.parent
+
+REDIS_HOST = os.getenv('REDIS_HOST', 'localhost')
+REDIS_PORT = os.getenv('REDIS_PORT', 6379)
+REDIS_PASSWORD = os.getenv('REDIS_PASSWORD', None)
+
+r = redis.Redis(
+    host=REDIS_HOST,
+    port=REDIS_PORT,
+    password=REDIS_PASSWORD,
+    decode_responses=True
+)
+
+try:
+    r.ping()
+    print("Successfully connected to Redis!")
+except redis.ConnectionError:
+    print("Redis connection failed")
 
 class TrieNode:
     def __init__(self):
