@@ -3,15 +3,15 @@
 ## 🚀 Project Overview
 This project provides an autocomplete feature using a Trie data structure, exposed as an API with FastAPI.
 
-## 📌 Features
+## Features
 - Extracts names from a dataset
 - Provides autocomplete suggestions
 - Deployed as a FastAPI API
 
-## 🔧 Installation
+## `Installation
 1. Clone this repository:
    ```bash
-   git clone [https://github.com/Ekshith-P/API-Exploration-and-Extraction.git](https://github.com/Ekshith-P/API-Exploration-and-Extraction.git)
+   git clone https://github.com/Ekshith-P/API-Exploration-and-Extraction.git
    ```
 
 2. Install dependencies:
@@ -28,6 +28,3 @@ This project provides an autocomplete feature using a Trie data structure, expos
    ```bash
    http://127.0.0.1:8000/docs
    ```
-
-## 📦 Project Structure
->>>>>>> c6ab21d (Autocomplete API)
