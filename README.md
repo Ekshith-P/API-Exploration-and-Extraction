@@ -1,6 +1,6 @@
 # Autocomplete API with FastAPI
 
-## 🚀 Project Overview
+## Project Overview
 This project provides an autocomplete feature using a Trie data structure, exposed as an API with FastAPI.
 
 ## Features
@@ -8,7 +8,7 @@ This project provides an autocomplete feature using a Trie data structure, expos
 - Provides autocomplete suggestions
 - Deployed as a FastAPI API
 
-## `Installation
+## Installation
 1. Clone this repository:
    ```bash
    git clone https://github.com/Ekshith-P/API-Exploration-and-Extraction.git
