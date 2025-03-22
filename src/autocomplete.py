@@ -1,11 +1,10 @@
 import os
 from pathlib import Path
 import redis
-PROJECT_ROOT = Path(__file__).parent.parent
 
-REDIS_HOST = os.getenv('REDIS_HOST', 'localhost')
-REDIS_PORT = os.getenv('REDIS_PORT', 6379)
-REDIS_PASSWORD = os.getenv('REDIS_PASSWORD', None)
+REDIS_HOST = os.getenv('REDIS_HOST', 'redis-16337.crce179.ap-south-1-1.ec2.redns.redis-cloud.com')
+REDIS_PORT = int(os.getenv('REDIS_PORT', 16337))
+REDIS_PASSWORD = os.getenv('Bittu39', None)
 
 r = redis.Redis(
     host=REDIS_HOST,

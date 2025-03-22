@@ -20,20 +20,26 @@
 #     """Returns a list of names that start with the given prefix."""
 #     return trie.search(prefix)
 from fastapi import FastAPI
-from src.autocomplete import Autocomplete
+from src.autocomplete import Autocomplete, search_names
 
 app = FastAPI()
-trie = Autocomplete()
 
-# Update path to match your actual file
-with open("data/results.txt", "r") as file:
-    for name in file:
-        trie.insert(name.strip())
+@app.get("/")
+async def root():
+    return {"message": "Welcome to the Autocomplete API"}
 
 @app.get("/autocomplete/")
-def get_suggestions(prefix: str, limit: int = 5):
-    return {"suggestions": trie.search(prefix, limit)}
+async def get_suggestions(prefix: str = "", limit: int = 5):
+    try:
+        suggestions = search_names(prefix.lower(), limit)
+        return {"suggestions": list(suggestions)}
+    except Exception as e:
+        return {"error": str(e)}
 
-if __name__ == "__main__":
-    import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+@app.get("/autocomplete/{prefix}")
+async def get_suggestions_path(prefix: str, limit: int = 5):
+    try:
+        suggestions = search_names(prefix.lower(), limit)
+        return {"suggestions": list(suggestions)}
+    except Exception as e:
+        return {"error": str(e)}
