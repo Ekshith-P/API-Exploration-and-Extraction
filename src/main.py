@@ -1,9 +1,11 @@
+import os
+import uvicorn
 from fastapi import FastAPI
 from src.autocomplete import search_names, load_names_into_db
 
 app = FastAPI()
 
-# Load names from results.txt into Neon PostgreSQL
+# Load names into PostgreSQL
 load_names_into_db("data/results.txt")
 
 @app.get("/")
@@ -12,8 +14,13 @@ async def root():
 
 @app.get("/autocomplete/")
 async def get_suggestions(prefix: str = "", limit: int = 5):
-    """Fetch name suggestions from the database"""
     return {"suggestions": search_names(prefix, limit)}
+
+# ✅ Add this to explicitly run on `$PORT`
+if __name__ == "__main__":
+    port = int(os.environ.get("PORT", 8000))  # Default to 8000 if not set
+    uvicorn.run(app, host="0.0.0.0", port=port)
+
 
 
 
