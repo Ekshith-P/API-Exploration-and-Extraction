@@ -31,14 +31,14 @@ def load_names_into_db(file_path):
                 # Check if the name already exists
                 existing_name = session.query(Name).filter_by(name=name).first()
                 if existing_name:
-                    print(f"⚠️ Skipping (already exists): {name}")
+                    print(f"Skipping (already exists): {name}")
                 else:
                     session.add(Name(name=name))
 
         session.commit()
-        print("✅ Names inserted successfully!")
+        print("Names inserted successfully!")
     except Exception as e:
-        print(f"❌ Error inserting names: {str(e)}")
+        print(f"Error inserting names: {str(e)}")
     finally:
         session.close()
 
