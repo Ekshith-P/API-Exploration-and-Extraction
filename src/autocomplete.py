@@ -25,18 +25,22 @@ Base.metadata.create_all(engine)
 print(f"🔍 Connected to database: {engine.url}")
 
 def load_names_into_db(file_path="data/results.txt"):
-    """Load names from results.txt into PostgreSQL without duplicates"""
+    """Load names from results.txt into PostgreSQL only if empty"""
     session = SessionLocal()
     try:
+        # ✅ Check if the table already has data
+        count = session.query(Name).count()
+        if count > 0:
+            print(f"✅ Database already has {count} names. Skipping loading.")
+            return  
+
         with open(file_path, "r") as file:
             names = [line.strip().lower() for line in file]
 
-        # ✅ Use `text()` to explicitly define SQL query
         insert_query = text("""
         INSERT INTO names (name) VALUES (:name)
         ON CONFLICT (name) DO NOTHING;
         """)
-
         session.execute(insert_query, [{"name": name} for name in names])
         session.commit()
         print("✅ Names inserted successfully into PostgreSQL!")
@@ -44,6 +48,7 @@ def load_names_into_db(file_path="data/results.txt"):
         print(f"❌ Error inserting names: {str(e)}")
     finally:
         session.close()
+
 
 
 
