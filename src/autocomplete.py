@@ -1,70 +1,59 @@
+from sqlalchemy import create_engine, Column, String
+from sqlalchemy.orm import sessionmaker, declarative_base
+from sqlalchemy import create_engine
 import os
-import redis
-from pathlib import Path
 
-# Redis Cloud connection details
-REDIS_HOST = "redis-16337.crce179.ap-south-1-1.ec2.redns.redis-cloud.com"
-REDIS_PORT = 16337
-REDIS_PASSWORD = os.getenv('REDIS_PASSWORD')  # Get this from environment variables
+# Set up database connection (replace with your database URI)
+DATABASE_URL = os.getenv("DATABASE_URL", "postgresql://pakalaekshith:Bittu39@localhost:5432/apiexploration")
+engine = create_engine(DATABASE_URL)
+SessionLocal = sessionmaker(bind=engine)
+Base = declarative_base()
 
-try:
-    r = redis.Redis(
-        host=REDIS_HOST,
-        port=REDIS_PORT,
-        password=REDIS_PASSWORD,
-        decode_responses=True,
-        ssl=True  # Required for Redis Cloud
-    )
-    r.ping()
-    print("Successfully connected to Redis!")
-except Exception as e:
-    print(f"Redis connection failed: {str(e)}")
-    r = None
+# Define SQL table model
+class Name(Base):
+    __tablename__ = "names"
+    name = Column(String, primary_key=True, index=True)
 
-class TrieNode:
-    def __init__(self):
-        self.children = {}
-        self.is_end_of_word = False
-        self.names = []
+# Create table if it doesn’t exist
+Base.metadata.create_all(engine)
 
-class Autocomplete:
-    def __init__(self):
-        self.root = TrieNode()
+# Debugging: Print the database URL
+print(f"🔍 Connecting to database: {engine.url}")
 
-    def insert(self, name):
-        node = self.root
-        name = name.lower()
-        for char in name:
-            if char not in node.children:
-                node.children[char] = TrieNode()
-            node = node.children[char]
-            node.names.append(name)
-        node.is_end_of_word = True
+def load_names_into_db(file_path):
+    session = SessionLocal()
+    try:
+        with open(file_path, "r") as file:
+            for line in file:
+                name = line.strip().lower()
+                print(f"🔹 Trying to insert: {name}")  # DEBUG: Print each name
+                
+                # Check if the name already exists
+                existing_name = session.query(Name).filter_by(name=name).first()
+                if existing_name:
+                    print(f"⚠️ Skipping (already exists): {name}")
+                else:
+                    session.add(Name(name=name))
 
-    def search(self, prefix, top_n=5):
-        prefix = prefix.lower()
-        node = self.root
-        for char in prefix:
-            if char not in node.children:
-                return []
-            node = node.children[char]
-        return sorted(set(node.names))[:top_n]
+        session.commit()
+        print("✅ Names inserted successfully!")
+    except Exception as e:
+        print(f"❌ Error inserting names: {str(e)}")
+    finally:
+        session.close()
 
-def load_names_into_redis(file_path):
-    project_root = Path(__file__).parent.parent
-    full_path = project_root / "data" / file_path
-    
-    with open(full_path, "r") as file:
-        for name in file:
-            name = name.strip().lower()
-            r.sadd("names", name)
 
 def search_names(prefix, limit=10):
-    if r is None:
-        return {"error": "Redis connection not available"}
-    try:
-        all_names = r.smembers("names")
-        matches = [name for name in all_names if name.startswith(prefix.lower())][:limit]
-        return matches
-    except Exception as e:
-        return {"error": str(e)}
+    """Search names by prefix from the database"""
+    session = SessionLocal()
+    results = session.query(Name).filter(Name.name.startswith(prefix.lower())).limit(limit).all()
+    session.close()
+    return [row.name for row in results]
+
+# Example usage (if you want to test the functions)
+# file_path = "names.txt"  # Replace with your file path
+# load_names_into_db(file_path)
+
+# Example search
+# search_results = search_names("app")
+# print(search_results)

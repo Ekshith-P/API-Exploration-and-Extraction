@@ -19,34 +19,48 @@
 # def autocomplete(prefix: str):
 #     """Returns a list of names that start with the given prefix."""
 #     return trie.search(prefix)
+# from fastapi import FastAPI
+# from src.autocomplete import Autocomplete, search_names, load_names_into_redis
+
+# app = FastAPI(
+#     title="Name Autocomplete API",
+#     description="An API for name autocompletion using Redis",
+#     version="1.0.0"
+# )
+
+# load_names_into_redis()
+
+# @app.get("/")
+# async def root():
+#     """Welcome endpoint for the API"""
+#     return {"message": "Welcome to the Autocomplete API"}
+
+# @app.get("/autocomplete/")
+# async def get_suggestions(prefix: str = "", limit: int = 5):
+#     """Get name suggestions using query parameters"""
+#     try:
+#         suggestions = search_names(prefix.lower(), limit)
+#         return {"suggestions": list(suggestions)}
+#     except Exception as e:
+#         return {"error": str(e)}
+
+# @app.get("/autocomplete/{prefix}")
+# async def get_suggestions_path(prefix: str, limit: int = 5):
+#     """Get name suggestions using path parameters"""
+#     try:
+#         suggestions = search_names(prefix.lower(), limit)
+#         return {"suggestions": list(suggestions)}
+#     except Exception as e:
+#         return {"error": str(e)}
+
 from fastapi import FastAPI
-from src.autocomplete import Autocomplete, search_names
+from src.autocomplete import search_names, load_names_into_db
 
-app = FastAPI(
-    title="Name Autocomplete API",
-    description="An API for name autocompletion using Redis",
-    version="1.0.0"
-)
+app = FastAPI()
 
-@app.get("/")
-async def root():
-    """Welcome endpoint for the API"""
-    return {"message": "Welcome to the Autocomplete API"}
+# Load names into SQL database
+load_names_into_db("data/results.txt")
 
 @app.get("/autocomplete/")
 async def get_suggestions(prefix: str = "", limit: int = 5):
-    """Get name suggestions using query parameters"""
-    try:
-        suggestions = search_names(prefix.lower(), limit)
-        return {"suggestions": list(suggestions)}
-    except Exception as e:
-        return {"error": str(e)}
-
-@app.get("/autocomplete/{prefix}")
-async def get_suggestions_path(prefix: str, limit: int = 5):
-    """Get name suggestions using path parameters"""
-    try:
-        suggestions = search_names(prefix.lower(), limit)
-        return {"suggestions": list(suggestions)}
-    except Exception as e:
-        return {"error": str(e)}
+    return {"suggestions": search_names(prefix, limit)}
