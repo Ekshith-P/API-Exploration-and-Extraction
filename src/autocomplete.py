@@ -1,12 +1,10 @@
-from sqlalchemy import create_engine, Column, String
+from sqlalchemy import create_engine, Column, String, text  # ✅ Import `text`
 from sqlalchemy.orm import sessionmaker, declarative_base
 from dotenv import load_dotenv
 import os
 
-# ✅ Load environment variables FIRST
+# ✅ Load environment variables
 load_dotenv()
-
-# ✅ Fetch DATABASE_URL from .env
 DATABASE_URL = os.getenv("DATABASE_URL")
 
 if not DATABASE_URL:
@@ -27,20 +25,71 @@ Base.metadata.create_all(engine)
 print(f"🔍 Connected to database: {engine.url}")
 
 def load_names_into_db(file_path="data/results.txt"):
-    """Load names from results.txt into PostgreSQL"""
+    """Load names from results.txt into PostgreSQL without duplicates"""
     session = SessionLocal()
     try:
         with open(file_path, "r") as file:
-            names = [{"name": line.strip().lower()} for line in file]
+            names = [line.strip().lower() for line in file]
 
-        # Bulk insert (ignores duplicates)
-        session.bulk_insert_mappings(Name, names, render_nulls=True)
+        # ✅ Use `text()` to explicitly define SQL query
+        insert_query = text("""
+        INSERT INTO names (name) VALUES (:name)
+        ON CONFLICT (name) DO NOTHING;
+        """)
+
+        session.execute(insert_query, [{"name": name} for name in names])
         session.commit()
         print("✅ Names inserted successfully into PostgreSQL!")
     except Exception as e:
         print(f"❌ Error inserting names: {str(e)}")
     finally:
         session.close()
+
+
+
+# from sqlalchemy import create_engine, Column, String
+# from sqlalchemy.orm import sessionmaker, declarative_base
+# from dotenv import load_dotenv
+# import os
+
+# # ✅ Load environment variables FIRST
+# load_dotenv()
+
+# # ✅ Fetch DATABASE_URL from .env
+# DATABASE_URL = os.getenv("DATABASE_URL")
+
+# if not DATABASE_URL:
+#     raise ValueError("❌ DATABASE_URL is not set! Check your environment variables.")
+
+# # ✅ Set up database connection
+# engine = create_engine(DATABASE_URL)
+# SessionLocal = sessionmaker(bind=engine)
+# Base = declarative_base()
+
+# # ✅ Define SQL table model
+# class Name(Base):
+#     __tablename__ = "names"
+#     name = Column(String, primary_key=True, index=True)
+
+# # ✅ Create table if it doesn’t exist
+# Base.metadata.create_all(engine)
+# print(f"🔍 Connected to database: {engine.url}")
+
+# def load_names_into_db(file_path="data/results.txt"):
+#     """Load names from results.txt into PostgreSQL"""
+#     session = SessionLocal()
+#     try:
+#         with open(file_path, "r") as file:
+#             names = [{"name": line.strip().lower()} for line in file]
+
+#         # Bulk insert (ignores duplicates)
+#         session.bulk_insert_mappings(Name, names, render_nulls=True)
+#         session.commit()
+#         print("✅ Names inserted successfully into PostgreSQL!")
+#     except Exception as e:
+#         print(f"❌ Error inserting names: {str(e)}")
+#     finally:
+#         session.close()
 
 def search_names(prefix, limit=10):
     """Search names by prefix from the database"""
