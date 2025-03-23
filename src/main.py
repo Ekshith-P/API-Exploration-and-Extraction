@@ -1,3 +1,22 @@
+from fastapi import FastAPI
+from src.autocomplete import search_names, load_names_into_db
+
+app = FastAPI()
+
+# Load names from results.txt into Neon PostgreSQL
+load_names_into_db("data/results.txt")
+
+@app.get("/")
+async def root():
+    return {"message": "Welcome to the Autocomplete API"}
+
+@app.get("/autocomplete/")
+async def get_suggestions(prefix: str = "", limit: int = 5):
+    """Fetch name suggestions from the database"""
+    return {"suggestions": search_names(prefix, limit)}
+
+
+
 # from fastapi import FastAPI
 # from typing import List
 # from trie import Trie
@@ -53,14 +72,14 @@
 #     except Exception as e:
 #         return {"error": str(e)}
 
-from fastapi import FastAPI
-from src.autocomplete import search_names, load_names_into_db
+# from fastapi import FastAPI
+# from src.autocomplete import search_names, load_names_into_db
 
-app = FastAPI()
+# app = FastAPI()
 
-# Load names into SQL database
-load_names_into_db("data/results.txt")
+# # Load names into SQL database
+# load_names_into_db("data/results.txt")
 
-@app.get("/autocomplete/")
-async def get_suggestions(prefix: str = "", limit: int = 5):
-    return {"suggestions": search_names(prefix, limit)}
+# @app.get("/autocomplete/")
+# async def get_suggestions(prefix: str = "", limit: int = 5):
+#     return {"suggestions": search_names(prefix, limit)}
