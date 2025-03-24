@@ -2,6 +2,24 @@ import matplotlib.pyplot as plt
 from collections import Counter
 from wordcloud import WordCloud
 
+# Class to track results for different versions
+class APIResults:
+    def __init__(self):
+        self.results = {"v1": set(), "v2": set(), "v3": set()}
+
+    def add_results(self, version, names):
+        if version in self.results:
+            self.results[version].update(names)
+
+# Global instance to track results
+api_results = APIResults()
+
+# Function to extract names and track results
+def extract_names(version, data):
+    names = [item["name"] for item in data]  # Adjust based on API response
+    api_results.add_results(version, names)  # Track results
+    return names
+
 # Load names from results.txt
 with open("results.txt", "r") as file:
     names = file.read().splitlines()
@@ -43,3 +61,10 @@ plt.imshow(wordcloud, interpolation="bilinear")
 plt.axis("off")
 plt.title("Word Cloud of Extracted Names")
 plt.show()
+
+# Example usage of extract_names (assuming data is fetched from an API)
+# data = [{"name": "Alice"}, {"name": "Bob"}, {"name": "Alice"}]  # Example API response
+# version = "v1"
+# extracted_names = extract_names(version, data)
+# print(f"Extracted Names for {version}: {extracted_names}")
+# print(f"Tracked Results: {api_results.results}")

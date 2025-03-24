@@ -1,0 +1,6 @@
+No. of searches made for v1: 1
+No. of searches made for v2: 1
+No. of searches made for v3: 1
+No. of results in v1: 1
+No. of results in v2: 1
+No. of results in v3: 1
