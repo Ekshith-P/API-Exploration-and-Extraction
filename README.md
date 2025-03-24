@@ -44,7 +44,7 @@ Rate-Limited Requests:** ~5%
 Retries Due to Rate Limits:** ~400  
 
 *2. Extraction Summary*
-Total Unique Names:** 7,298  
+Total Unique Names:** 18632  
 Average Name Length: 6.61 characters  
 Shortest Name: 2 characters  
 Longest Name: 10 characters  
