@@ -5,22 +5,19 @@ from src.autocomplete import search_names, load_names_into_db
 
 app = FastAPI()
 
-# ✅ Load names into PostgreSQL only if empty
+# Load names into PostgreSQL if the table is empty
 load_names_into_db("data/results.txt")
-
-@app.get("/")
-async def root():
-    return {"message": "Welcome to the Autocomplete API"}
 
 @app.get("/autocomplete/")
 async def get_suggestions(prefix: str = "", limit: int = 5):
+    """Return name suggestions based on the provided prefix."""
     return {"suggestions": search_names(prefix, limit)}
 
-# ✅ Ensure FastAPI runs on `$PORT`
 if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 8000))  # Default to 8000 if not set
-    print(f"🚀 Starting FastAPI on port {port}")
+    port = int(os.environ.get("PORT", 8000))
+    print(f"Starting FastAPI on port {port}")
     uvicorn.run(app, host="0.0.0.0", port=port)
+
 
 
 
